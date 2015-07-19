@@ -102,40 +102,28 @@ J = 1/m * sum + lambda/(2*m) * (lambdaSum1 + lambdaSum2);
 % =========================================================================
 
 
-Delta1 = 0;
-Delta2 = 0;
+y_matrix = eye(num_labels)(y,:);
+a1 = [ones(m,1) X];
+z2 = a1 * Theta1';
+a2 = sigmoid(z2);
+a2 = [ones(size(a2,1),1) a2];
+z3 = a2 * Theta2';
+a3 = sigmoid(z3);
 
- for t=1:m,
- 	y_temp = zeros(1,10);
- 	y_temp(y(t)) = 1;
+d3 = a3 - y_matrix;
+d2 = d3 * Theta2(:,2:end) .* sigmoidGradient(z2);
 
- 	% Step 1 - calculate feed forward
- 	a1 = [1,X(t,:)];
- 	z2 = a1 * Theta1';
- 	a2 = sigmoid(z2);
-	a3 = sigmoid([1,a2] * Theta2');
+Delta1 = d2' * a1;
+Delta2 = d3' * a2;
 
-	% Step 2 - calculate layer 3 delta
-	delta3 = a3 - y_temp;
+temp_d1 = Delta1(:,1);
+temp_d2 = Delta2(:,1);
 
-	% Step 3 - 
-	size(z2)
-	size(Theta2)
-	size(delta3)
-	size(a1)
-	size(Theta1)
-	pause
-	delta2 = delta3 * Theta2 .* [1, sigmoidGradient(a1 * Theta1')]';
- 
-	% Step 4 - Calculate capital-deltas - these are used for remmembering (accumulating)
-	Delta1 = Delta1 + delta2(2:end) * (a1');
-	Delta2 = Delta2 + delta3 * (a2');
+Theta1_grad = 1/m * Delta1 + lambda/m * Theta1;
+Theta2_grad = 1/m * Delta2 + lambda/m * Theta2;
 
- end
-
-Theta1_grad = 1/m * Delta1;
-Theta2_grad = 1/m * Delta2;
-
+Theta1_grad(:,1) = 1/m * temp_d1;
+Theta2_grad(:,1) = 1/m * temp_d2;
 
 
 % Unroll gradients
